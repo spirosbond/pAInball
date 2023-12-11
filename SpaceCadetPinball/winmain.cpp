@@ -11,6 +11,8 @@
 #include "translations.h"
 #include "font_selection.h"
 
+#include <SDL_ttf.h>
+
 constexpr const char* winmain::Version;
 
 SDL_Window* winmain::MainWindow = nullptr;
@@ -63,6 +65,7 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 
 	// SDL init
 	SDL_SetMainReady();
+	TTF_Init();
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO |
 		SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
 	{
@@ -997,7 +1000,7 @@ int winmain::event_handler(const SDL_Event* event)
 			no_time_loss = true;
 			has_focus = true;
 			break;
-		case SDL_WINDOWEVENT_FOCUS_LOST:
+		// case SDL_WINDOWEVENT_FOCUS_LOST: //Spiros removed for running without focus
 		case SDL_WINDOWEVENT_HIDDEN:
 			activated = false;
 			fullscrn::activate(0);

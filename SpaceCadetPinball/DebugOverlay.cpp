@@ -18,6 +18,7 @@
 #include "options.h"
 #include "Sound.h"
 
+#include <SDL_ttf.h>
 
 gdrv_bitmap8* DebugOverlay::dbScreen = nullptr;
 
@@ -115,6 +116,8 @@ void DebugOverlay::DrawOverlay()
 	if (options::Options.DebugOverlayBallPosition || options::Options.DebugOverlayBallEdges)
 		DrawBallInfo();
 
+	DrawAIInfo();
+	
 	// Draw positions associated with currently playing sound channels
 	if (options::Options.DebugOverlaySounds)
 		DrawSoundPositions();
@@ -138,6 +141,144 @@ void DebugOverlay::DrawOverlay()
 	SDL_SetRenderDrawBlendMode(winmain::Renderer, SDL_BLENDMODE_BLEND);
 	SDL_RenderCopy(winmain::Renderer, dbScreen->Texture, nullptr, &render::DestinationRect);
 	SDL_SetRenderDrawBlendMode(winmain::Renderer, blendMode);
+}
+
+void DebugOverlay::DrawAIInfo()
+{
+	// SDL_SetRenderDrawColor(winmain::Renderer, 0, 50, 200, 255);
+	// SDL_Rect rect{ 0,0, 100 , 100 };
+	// SDL_RenderDrawRect(winmain::Renderer, &rect);
+
+	//this opens a font style and sets a size
+	TTF_Font* font = TTF_OpenFont("NotoMonoNerdFont-Regular.ttf", 15);
+	if (font == NULL){
+		printf("No font found 3: %s \n",TTF_GetError());
+	}
+	
+
+	// this is the color in rgb format,
+	// maxing out all would give you the color white,
+	// and it will be your text's color
+	SDL_Color White = {255, 255, 255};
+
+	// as TTF_RenderText_Solid could only be used on
+	// SDL_Surface then you have to create the surface first
+	SDL_Surface* surfaceMessageSpeed = TTF_RenderText_Solid(font, "speed", White);
+	SDL_Surface* surfaceMessageXpos = TTF_RenderText_Solid(font, "Xpos", White);
+	SDL_Surface* surfaceMessageYpos = TTF_RenderText_Solid(font, "Ypos", White);
+	SDL_Surface* surfaceMessageXdir = TTF_RenderText_Solid(font, "Xdir", White);
+	SDL_Surface* surfaceMessageYdir = TTF_RenderText_Solid(font, "Ydir", White);
+	SDL_Surface* surfaceMessageScore = TTF_RenderText_Solid(font, "score", White);
+	// SDL_Surface* surfaceMessage;
+	for (auto ball : pb::MainTable->BallList)
+	{	
+		// printf("%d\n",pb::game_mode);
+		// if (ball->ActiveFlag) {	
+			// printf("Spiros Test 3");
+			char buffer[64];
+			int retSpeed = snprintf(buffer, sizeof buffer, "%f", ball->Speed / 60);
+	    	surfaceMessageSpeed = TTF_RenderText_Solid(font, buffer, White); 
+			int retX = snprintf(buffer, sizeof buffer, "%f", ball->Position.X / 7.5);
+	    	surfaceMessageXpos = TTF_RenderText_Solid(font, buffer, White); 
+			int retY = snprintf(buffer, sizeof buffer, "%f", ball->Position.Y / 15);
+	    	surfaceMessageYpos = TTF_RenderText_Solid(font, buffer, White);
+	    	int retXdir = snprintf(buffer, sizeof buffer, "%f", ball->Direction.X);
+	    	surfaceMessageXdir = TTF_RenderText_Solid(font, buffer, White); 
+	    	int retYdir = snprintf(buffer, sizeof buffer, "%f", ball->Direction.Y);
+	    	surfaceMessageYdir = TTF_RenderText_Solid(font, buffer, White); 
+	    	int retScore = snprintf(buffer, sizeof buffer, "%d", pb::MainTable->CurScore);
+	    	surfaceMessageScore = TTF_RenderText_Solid(font, buffer, White); 
+			// printf("Speed: %f\n",ball->Speed);
+			// printf("Position.X: %f\n",ball->Position.X);
+			// printf("Position.Y: %f\n",ball->Position.Y);
+	    	// printf("Score: %d\n",pb::MainTable->CurScore);
+	    	if(pb::MainTable->BallInDrainFlag){
+	    		pb::MainTable->FlipperL->ball_collisions = 0;
+	    		pb::MainTable->FlipperR->ball_collisions = 0;
+	    	}
+	    	printf("%d,%f,%f,%f,%f,%f,%d,%d,%d\n",
+	    		pb::game_mode,
+	    		ball->Speed / 60,
+	    		ball->Position.X / 7.5,
+	    		ball->Position.Y / 15,
+	    		ball->Direction.X,
+	    		ball->Direction.Y,
+	    		pb::MainTable->CurScore,
+	    		pb::MainTable->FlipperL->ball_collisions + pb::MainTable->FlipperR->ball_collisions,
+	    		pb::MainTable->BallInDrainFlag
+	    		);
+	    	fflush(stdout);
+
+			break;
+		// } else {
+			// printf("%d,%f,%f,%f,%f,%f,%d\n",0,0,0,0,0,0,pb::MainTable->CurScore);
+		// }
+	}
+	
+
+	// now you can convert it into a texture
+	SDL_Texture* textureMessageSpeed = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageSpeed);
+	SDL_Rect MessageSpeed_rect; //create a rect
+	MessageSpeed_rect.x = 0;  //controls the rect's x coordinate 
+	MessageSpeed_rect.y = 0; // controls the rect's y coordinte
+	MessageSpeed_rect.w = 70; // controls the width of the rect
+	MessageSpeed_rect.h = 20; // controls the height of the rect
+	SDL_Texture* textureMessageXpos = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageXpos);
+	SDL_Rect MessageXpos_rect; //create a rect
+	MessageXpos_rect.x = 0;  //controls the rect's x coordinate 
+	MessageXpos_rect.y = 20; // controls the rect's y coordinte
+	MessageXpos_rect.w = 70; // controls the width of the rect
+	MessageXpos_rect.h = 20; // controls the height of the rect
+	SDL_Texture* textureMessageYpos = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageYpos);
+	SDL_Rect MessageYpos_rect; //create a rect
+	MessageYpos_rect.x = 0;  //controls the rect's x coordinate 
+	MessageYpos_rect.y = 40; // controls the rect's y coordinte
+	MessageYpos_rect.w = 70; // controls the width of the rect
+	MessageYpos_rect.h = 20; // controls the height of the rect
+	SDL_Texture* textureMessageXdir = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageXdir);
+	SDL_Rect MessageXdir_rect; //create a rect
+	MessageXdir_rect.x = 300;  //controls the rect's x coordinate 
+	MessageXdir_rect.y = 0; // controls the rect's y coordinte
+	MessageXdir_rect.w = 70; // controls the width of the rect
+	MessageXdir_rect.h = 20; // controls the height of the rect
+	SDL_Texture* textureMessageYdir = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageYdir);
+	SDL_Rect MessageYdir_rect; //create a rect
+	MessageYdir_rect.x = 300;  //controls the rect's x coordinate 
+	MessageYdir_rect.y = 20; // controls the rect's y coordinte
+	MessageYdir_rect.w = 70; // controls the width of the rect
+	MessageYdir_rect.h = 20; // controls the height of the rect
+	SDL_Texture* textureMessageScore = SDL_CreateTextureFromSurface(winmain::Renderer, surfaceMessageScore);
+	SDL_Rect MessageScore_rect; //create a rect
+	MessageScore_rect.x = 300;  //controls the rect's x coordinate 
+	MessageScore_rect.y = 40; // controls the rect's y coordinte
+	MessageScore_rect.w = 70; // controls the width of the rect
+	MessageScore_rect.h = 20; // controls the height of the rect
+
+	// (0,0) is on the top left of the window/screen,
+	// think a rect as the text's box,
+	// that way it would be very simple to understand
+
+	// Now since it's a texture, you have to put RenderCopy
+	// in your game loop area, the area where the whole code executes
+
+	// you put the renderer's name first, the Message,
+	// the crop size (you can ignore this if you don't want
+	// to dabble with cropping), and the rect which is the size
+	// and coordinate of your texture
+	SDL_RenderCopy(winmain::Renderer, textureMessageSpeed, NULL, &MessageSpeed_rect);
+	SDL_RenderCopy(winmain::Renderer, textureMessageXpos, NULL, &MessageXpos_rect);
+	SDL_RenderCopy(winmain::Renderer, textureMessageYpos, NULL, &MessageYpos_rect);
+	SDL_RenderCopy(winmain::Renderer, textureMessageXdir, NULL, &MessageXdir_rect);
+	SDL_RenderCopy(winmain::Renderer, textureMessageYdir, NULL, &MessageYdir_rect);
+	SDL_RenderCopy(winmain::Renderer, textureMessageScore, NULL, &MessageScore_rect);
+	SDL_FreeSurface(surfaceMessageSpeed);
+	SDL_FreeSurface(surfaceMessageXpos);
+	SDL_FreeSurface(surfaceMessageYpos);
+	SDL_FreeSurface(surfaceMessageXdir);
+	SDL_FreeSurface(surfaceMessageYdir);
+	SDL_FreeSurface(surfaceMessageScore);
+	TTF_CloseFont(font);
+
 }
 
 void DebugOverlay::DrawBoxGrid()

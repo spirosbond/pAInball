@@ -86,7 +86,7 @@ void TBall::Repaint()
 	{
 		if (VisualZArray[index] <= zDepth) break;
 	}
-
+	
 	SpriteSetBall(index, pos2D, zDepth);
 }
 

@@ -19,4 +19,5 @@ public:
 	
 	int BmpIndex;
 	TFlipperEdge* FlipperEdge;
+	int ball_collisions;
 };

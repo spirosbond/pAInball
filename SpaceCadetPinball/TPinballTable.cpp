@@ -39,8 +39,76 @@
 #include "TDrain.h"
 #include "translations.h"
 
+#include <thread>
+#include <iostream>
+#include <thread>
+#include <string>
+#include <time.h>
+#include <chrono>
+
+
 int TPinballTable::score_multipliers[5] = {1, 2, 3, 5, 10};
 
+
+// Function to be executed by the thread
+void readAIInputs() {
+    printf("Thread started\n");
+    time_t start = time(0);
+    while(1){
+	    if (std::cin.good()) {
+	    	std::string line;					
+	    	std::getline(std::cin, line);
+        	std::cout << "received: " << line << std::endl;
+        	pb::MainTable->Plunger->Message(MessageCode::PlungerInputPressed, 0);
+			double seconds_since_start = difftime( time(0), start);
+			if (seconds_since_start > 0.2) {
+				pb::MainTable->Plunger->Message(MessageCode::PlungerInputReleased, 0);
+				start = time(0);
+			}
+        	switch(stoi(line)){
+        		case nothing:
+					pb::MainTable->FlipperL->Message(MessageCode::TFlipperRetract, 0);
+					pb::MainTable->FlipperR->Message(MessageCode::TFlipperRetract, 0);
+					// pb::MainTable->Plunger->Message(MessageCode::PlungerInputReleased, 0);
+        			break;
+        		case LF_Ext:
+					pb::MainTable->FlipperL->Message(MessageCode::TFlipperExtend, 0);
+        			break;
+        		case LF_Ret:
+					pb::MainTable->FlipperL->Message(MessageCode::TFlipperRetract, 0);
+        			break;
+        		case RF_Ext:
+					pb::MainTable->FlipperR->Message(MessageCode::TFlipperExtend, 0);
+        			break;
+        		case RF_Ret:
+					pb::MainTable->FlipperR->Message(MessageCode::TFlipperRetract, 0);
+        			break;
+        		case Plunger_Press:
+					pb::MainTable->Plunger->Message(MessageCode::PlungerInputPressed, 0);
+        			break;
+        		case Plunger_Release:
+					pb::MainTable->Plunger->Message(MessageCode::PlungerInputReleased, 0);
+        			break;
+        		case LF_Hit:
+					pb::MainTable->FlipperL->Message(MessageCode::TFlipperExtend, 0);
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					pb::MainTable->FlipperL->Message(MessageCode::TFlipperRetract, 0);
+        			break;
+        		case RF_Hit:
+					pb::MainTable->FlipperR->Message(MessageCode::TFlipperExtend, 0);
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					pb::MainTable->FlipperR->Message(MessageCode::TFlipperRetract, 0);
+        			break;
+        	}
+
+		} else {
+    		std::cout << "No input available." << std::endl;
+	    }
+    }
+    
+}
+
+std::thread t1(readAIInputs);
 
 TPinballTable::TPinballTable(): TPinballComponent(nullptr, -1, false)
 {
@@ -188,6 +256,7 @@ TPinballTable::TPinballTable(): TPinballComponent(nullptr, -1, false)
 	pb::InfoTextBox = dynamic_cast<TTextBox*>(find_component("info_text_box"));
 	pb::MissTextBox = dynamic_cast<TTextBox*>(find_component("mission_text_box"));
 	control::make_links(this);
+    
 }
 
 
@@ -323,13 +392,13 @@ int TPinballTable::Message(MessageCode code, float value)
 	{
 	case MessageCode::LeftFlipperInputPressed:
 		if (!TiltLockFlag)
-		{
+		{	
 			FlipperL->Message(MessageCode::TFlipperExtend, value);
 		}
 		break;
 	case MessageCode::LeftFlipperInputReleased:
 		if (!TiltLockFlag)
-		{
+		{	
 			FlipperL->Message(MessageCode::TFlipperRetract, value);
 		}
 		break;

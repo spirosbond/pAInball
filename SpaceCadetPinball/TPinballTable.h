@@ -22,12 +22,15 @@ struct score_struct_super
 	int BallLockedCounter;
 };
 
+enum Action { nothing, LF_Hit, RF_Hit, LF_Ext, LF_Ret, RF_Ext, RF_Ret, Plunger_Press, Plunger_Release};
+
 
 class TPinballTable : public TPinballComponent
 {
 public:
 	TPinballTable();
 	~TPinballTable() override;
+	void readAIInputs();
 	TPinballComponent* find_component(LPCSTR componentName);
 	TPinballComponent* find_component(int groupIndex);
 	int AddScore(int score);

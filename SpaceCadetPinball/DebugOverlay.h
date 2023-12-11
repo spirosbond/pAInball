@@ -16,6 +16,7 @@ private:
 	static void DrawCicleType(circle_type& circle);
 	static void DrawLineType(line_type& line);
 	static void DrawEdge(TEdgeSegment* edge);
+	static void DrawAIInfo();
 	static void DrawBoxGrid();
 	static void DrawAllEdges();
 	static void DrawBallInfo();

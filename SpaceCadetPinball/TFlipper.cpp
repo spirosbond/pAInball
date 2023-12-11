@@ -46,6 +46,7 @@ TFlipper::TFlipper(TPinballTable* table, int groupIndex) : TCollisionComponent(t
 	BmpIndex = 0;
 	if (table)
 		table->FlipperList.push_back(this);
+	ball_collisions = 0;
 }
 
 TFlipper::~TFlipper()
@@ -183,6 +184,8 @@ void TFlipper::FlipperCollision(float deltaAngle)
 
 	if (collisionFlag)
 	{
+		ball_collisions++;
+		// printf("COLLISION: %d\n",ball_collisions);
 		auto angleAdvance = deltaAngle / (std::fabs(FlipperEdge->MoveSpeed) * 5.0f);
 		FlipperEdge->CurrentAngle -= angleAdvance;
 		FlipperEdge->AngleRemainder += std::fabs(angleAdvance);
