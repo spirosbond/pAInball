@@ -10,6 +10,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 # On Windows, set paths to SDL-devel packages here
 if(WIN32)
+    message(STATUS "win32")
    list(APPEND SDL2_PATH "${CMAKE_CURRENT_LIST_DIR}/Libs/SDL2")
    list(APPEND SDL2_MIXER_PATH "${CMAKE_CURRENT_LIST_DIR}/Libs/SDL2_mixer")
 endif()
@@ -20,6 +21,7 @@ if(MINGW)
 endif()
 
 if(APPLE)
+    message(STATUS "apple")
     set(MACOSX_RPATH)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
@@ -31,10 +33,12 @@ endif()
 # SDL2main is not needed
 set(SDL2_BUILDING_LIBRARY ON)
 
-find_package(SDL2 REQUIRED)
+FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2_mixer REQUIRED)
+FIND_PACKAGE(SDL2_TTF REQUIRED)
 
-include_directories(${SDL2_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIR})
+
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "Include dir='${dir}'")
@@ -215,7 +219,11 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" OR ${CMAKE_VERSION} VERSION_EQUAL "
             )
 endif()
 
-target_link_libraries(SpaceCadetPinball ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+  message(STATUS "Library dir='${SDL2_LIBRARY}'")
+  message(STATUS "Library dir='${SDL2_MIXER_LIBRARY}'")
+  message(STATUS "Library dir='${SDL2_TTF_LIBRARY}'")
+
+target_link_libraries(SpaceCadetPinball ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY})
 
 # On Windows, copy DLL to output
 if(WIN32)
