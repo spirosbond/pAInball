@@ -93,8 +93,9 @@ def get_feedback(p,i, fbk, scores, ball_collisions):
                 ball_collisions[i] = 0
             ball_collisions[i] = fbk[Fbk.BallCollisions.value]
         except:
+            # p.stdout.flush()
             continue
-        p.stdout.flush()
+        # p.stdout.flush()
         # gc.collect()
         
 

@@ -19,8 +19,39 @@
 #include "Sound.h"
 
 #include <SDL_ttf.h>
+#include <thread>
+#include <time.h>
+#include <chrono>
 
 gdrv_bitmap8* DebugOverlay::dbScreen = nullptr;
+
+
+void writeOutputsForAI() {
+	printf("Thread writeOutputsForAI started\n");
+	while(1){
+		if(pb::MainTable->BallInDrainFlag){
+	    		pb::MainTable->FlipperL->ball_collisions = 0;
+	    		pb::MainTable->FlipperR->ball_collisions = 0;
+	    	}
+		for (auto ball : pb::MainTable->BallList) {
+			printf("%d,%f,%f,%f,%f,%f,%d,%d,%d\r",
+			    		pb::game_mode,
+			    		ball->Speed / 60,
+			    		ball->Position.X / 7.5,
+			    		ball->Position.Y / 15,
+			    		ball->Direction.X,
+			    		ball->Direction.Y,
+			    		pb::MainTable->CurScore,
+			    		pb::MainTable->FlipperL->ball_collisions + pb::MainTable->FlipperR->ball_collisions,
+			    		pb::MainTable->BallInDrainFlag
+			    		);
+	    	fflush(stdout);
+	    	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	    }
+	}
+}
+
+std::thread t2;
 
 static int SDL_RenderDrawCircle(SDL_Renderer* renderer, int x, int y, int radius)
 {
@@ -117,7 +148,9 @@ void DebugOverlay::DrawOverlay()
 		DrawBallInfo();
 
 	DrawAIInfo();
-	
+	if(!t2.joinable()){
+		t2 = std::thread(writeOutputsForAI);
+	}
 	// Draw positions associated with currently playing sound channels
 	if (options::Options.DebugOverlaySounds)
 		DrawSoundPositions();
@@ -163,12 +196,18 @@ void DebugOverlay::DrawAIInfo()
 
 	// as TTF_RenderText_Solid could only be used on
 	// SDL_Surface then you have to create the surface first
-	SDL_Surface* surfaceMessageSpeed = TTF_RenderText_Solid(font, "speed", White);
-	SDL_Surface* surfaceMessageXpos = TTF_RenderText_Solid(font, "Xpos", White);
-	SDL_Surface* surfaceMessageYpos = TTF_RenderText_Solid(font, "Ypos", White);
-	SDL_Surface* surfaceMessageXdir = TTF_RenderText_Solid(font, "Xdir", White);
-	SDL_Surface* surfaceMessageYdir = TTF_RenderText_Solid(font, "Ydir", White);
-	SDL_Surface* surfaceMessageScore = TTF_RenderText_Solid(font, "score", White);
+	// SDL_Surface* surfaceMessageSpeed = TTF_RenderText_Solid(font, "speed", White);
+	// SDL_Surface* surfaceMessageXpos = TTF_RenderText_Solid(font, "Xpos", White);
+	// SDL_Surface* surfaceMessageYpos = TTF_RenderText_Solid(font, "Ypos", White);
+	// SDL_Surface* surfaceMessageXdir = TTF_RenderText_Solid(font, "Xdir", White);
+	// SDL_Surface* surfaceMessageYdir = TTF_RenderText_Solid(font, "Ydir", White);
+	// SDL_Surface* surfaceMessageScore = TTF_RenderText_Solid(font, "score", White);
+	SDL_Surface* surfaceMessageSpeed;
+	SDL_Surface* surfaceMessageXpos;
+	SDL_Surface* surfaceMessageYpos;
+	SDL_Surface* surfaceMessageXdir;
+	SDL_Surface* surfaceMessageYdir;
+	SDL_Surface* surfaceMessageScore;
 	// SDL_Surface* surfaceMessage;
 	for (auto ball : pb::MainTable->BallList)
 	{	
@@ -188,26 +227,28 @@ void DebugOverlay::DrawAIInfo()
 	    	surfaceMessageYdir = TTF_RenderText_Solid(font, buffer, White); 
 	    	int retScore = snprintf(buffer, sizeof buffer, "%d", pb::MainTable->CurScore);
 	    	surfaceMessageScore = TTF_RenderText_Solid(font, buffer, White); 
+	    	
 			// printf("Speed: %f\n",ball->Speed);
 			// printf("Position.X: %f\n",ball->Position.X);
 			// printf("Position.Y: %f\n",ball->Position.Y);
 	    	// printf("Score: %d\n",pb::MainTable->CurScore);
-	    	if(pb::MainTable->BallInDrainFlag){
-	    		pb::MainTable->FlipperL->ball_collisions = 0;
-	    		pb::MainTable->FlipperR->ball_collisions = 0;
-	    	}
-	    	printf("%d,%f,%f,%f,%f,%f,%d,%d,%d\n",
-	    		pb::game_mode,
-	    		ball->Speed / 60,
-	    		ball->Position.X / 7.5,
-	    		ball->Position.Y / 15,
-	    		ball->Direction.X,
-	    		ball->Direction.Y,
-	    		pb::MainTable->CurScore,
-	    		pb::MainTable->FlipperL->ball_collisions + pb::MainTable->FlipperR->ball_collisions,
-	    		pb::MainTable->BallInDrainFlag
-	    		);
-	    	fflush(stdout);
+	    	// if(pb::MainTable->BallInDrainFlag){
+	    	// 	pb::MainTable->FlipperL->ball_collisions = 0;
+	    	// 	pb::MainTable->FlipperR->ball_collisions = 0;
+	    	// }
+	    	// printf("%d,%f,%f,%f,%f,%f,%d,%d,%d\r",
+	    	// 	pb::game_mode,
+	    	// 	ball->Speed / 60,
+	    	// 	ball->Position.X / 7.5,
+	    	// 	ball->Position.Y / 15,
+	    	// 	ball->Direction.X,
+	    	// 	ball->Direction.Y,
+	    	// 	pb::MainTable->CurScore,
+	    	// 	pb::MainTable->FlipperL->ball_collisions + pb::MainTable->FlipperR->ball_collisions,
+	    	// 	pb::MainTable->BallInDrainFlag
+	    	// 	);
+	    	// fflush(stdout);
+	    	// usleep(100000);
 
 			break;
 		// } else {
@@ -271,12 +312,19 @@ void DebugOverlay::DrawAIInfo()
 	SDL_RenderCopy(winmain::Renderer, textureMessageXdir, NULL, &MessageXdir_rect);
 	SDL_RenderCopy(winmain::Renderer, textureMessageYdir, NULL, &MessageYdir_rect);
 	SDL_RenderCopy(winmain::Renderer, textureMessageScore, NULL, &MessageScore_rect);
+	
 	SDL_FreeSurface(surfaceMessageSpeed);
 	SDL_FreeSurface(surfaceMessageXpos);
 	SDL_FreeSurface(surfaceMessageYpos);
 	SDL_FreeSurface(surfaceMessageXdir);
 	SDL_FreeSurface(surfaceMessageYdir);
 	SDL_FreeSurface(surfaceMessageScore);
+	SDL_DestroyTexture(textureMessageSpeed);
+    SDL_DestroyTexture(textureMessageXpos);
+    SDL_DestroyTexture(textureMessageYpos);
+    SDL_DestroyTexture(textureMessageXdir);
+    SDL_DestroyTexture(textureMessageYdir);
+    SDL_DestroyTexture(textureMessageScore);
 	TTF_CloseFont(font);
 
 }

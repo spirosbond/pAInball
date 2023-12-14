@@ -41,7 +41,6 @@
 
 #include <thread>
 #include <iostream>
-#include <thread>
 #include <string>
 #include <time.h>
 #include <chrono>
@@ -52,13 +51,13 @@ int TPinballTable::score_multipliers[5] = {1, 2, 3, 5, 10};
 
 // Function to be executed by the thread
 void readAIInputs() {
-    printf("Thread started\n");
+    printf("Thread readAIInputs started\n");
     time_t start = time(0);
     while(1){
 	    if (std::cin.good()) {
 	    	std::string line;					
 	    	std::getline(std::cin, line);
-        	std::cout << "received: " << line << std::endl;
+        	// std::cout << "received: " << line << std::endl;
         	pb::MainTable->Plunger->Message(MessageCode::PlungerInputPressed, 0);
 			double seconds_since_start = difftime( time(0), start);
 			if (seconds_since_start > 0.2) {
