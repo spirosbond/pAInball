@@ -1,14 +1,25 @@
-from numpy import exp, array, random, dot
+from numpy import exp, array, random, dot, savetxt, loadtxt, append, vstack, hstack
 
 class NeuronLayer():
     def __init__(self, number_of_neurons, number_of_inputs_per_neuron):
+        self.number_of_neurons = number_of_neurons
+        self.number_of_inputs_per_neuron = number_of_inputs_per_neuron
         self.synaptic_weights = 2 * random.random((number_of_inputs_per_neuron, number_of_neurons)) - 1
 
 
 class NeuralNetwork():
-    def __init__(self, layer1, layer2):
-        self.layer1 = layer1
-        self.layer2 = layer2
+    def __init__(self, num_of_inputs, num_of_outputs, hidden_layers):
+        self.num_of_inputs = num_of_inputs
+        self.num_of_outputs = num_of_outputs
+        self.hidden_layers = hidden_layers
+        self.layers = []
+        for layer in range(len(hidden_layers)+1):
+            if layer == 0:
+                self.layers.append(NeuronLayer(hidden_layers[layer], num_of_inputs))
+            elif layer == len(hidden_layers):
+                self.layers.append(NeuronLayer(num_of_outputs, hidden_layers[layer-1]))
+            else:
+                self.layers.append(NeuronLayer(hidden_layers[layer], hidden_layers[layer-1]))
 
     # The Sigmoid function, which describes an S shaped curve.
     # We pass the weighted sum of the inputs through this function to
@@ -49,13 +60,62 @@ class NeuralNetwork():
 
     # The neural network thinks.
     def think(self, inputs):
-        output_from_layer1 = self.__sigmoid(dot(inputs, self.layer1.synaptic_weights))
-        output_from_layer2 = self.__sigmoid(dot(output_from_layer1, self.layer2.synaptic_weights))
-        return output_from_layer1, output_from_layer2
+        outputs = []
+        for idx, layer in enumerate(self.layers):
+            if idx == 0:
+                output = self.__sigmoid(dot(inputs, layer.synaptic_weights))
+            else:
+                output = self.__sigmoid(dot(outputs[idx-1], layer.synaptic_weights))
+            outputs.append(output)
+        # output_from_layer1 = self.__sigmoid(dot(inputs, self.layers[0].synaptic_weights))
+        # output_from_layer2 = self.__sigmoid(dot(output_from_layer1, self.layers[1].synaptic_weights))
+
+        return outputs
 
     # The neural network prints its weights
     def print_weights(self):
-        print("    Layer 1 (3 neurons, each with 2 inputs): ")
-        print(self.layer1.synaptic_weights)
-        print("    Layer 2 (1 neuron, with 3 inputs):")
-        print(self.layer2.synaptic_weights)
+        for idx, layer in enumerate(self.layers):
+            print(f"    Layer {idx} ({layer.number_of_neurons} neurons, each with {layer.number_of_inputs_per_neuron} inputs): ")
+            print(layer.synaptic_weights)
+
+    # Get the neural network weights in an array
+    def get_weights(self):
+        weights = []
+        for idx, layer in enumerate(self.layers):
+            weights.append(layer.synaptic_weights)
+        return weights
+
+    # The neural network prints its weights
+    def save_weights(self, filename):
+        # self.print_weights()
+        f=open(filename,'a')
+        for idx, layer in enumerate(self.layers):
+            savetxt(f, layer.synaptic_weights, delimiter=",")
+        f.close()
+
+    def load_weights(self, filename):
+        f=open(filename,'r')
+        # lines = loadtxt(filename, comments="#", delimiter=",", unpack=False)
+        # print(lines)
+        for idx, layer in enumerate(self.layers):
+            layer.synaptic_weights = array([])
+            for neuron in range(layer.number_of_inputs_per_neuron):
+                line = f.readline()
+                # print(line)
+                line_arr = array(line.split(',')).astype(float)
+                # print(neuron)
+                # print(line_arr)
+                if(neuron == 0):
+                    layer.synaptic_weights = hstack((layer.synaptic_weights, line_arr))
+                else:
+                    layer.synaptic_weights = vstack((layer.synaptic_weights, line_arr))
+            # print(f"    Layer {idx} ({layer.number_of_neurons} neurons, each with {layer.number_of_inputs_per_neuron} inputs): ")
+            # print(layer.synaptic_weights)
+        f.close()
+        self.print_weights()
+
+    # The neural network prints its outputs
+    def print_outputs(self, outputs):
+        for idx, layer in enumerate(self.layers):
+            print(f"    Layer {idx} ({layer.number_of_neurons} neurons) outputs: ")
+            print(outputs[idx])

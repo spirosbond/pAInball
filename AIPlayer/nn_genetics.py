@@ -1,5 +1,5 @@
 from numpy import exp, array, random, dot, delete
-from neural_ntw2 import NeuralNetwork
+from neural_ntw import NeuralNetwork
 
 class NNGenetics():
 	def __init__(self):

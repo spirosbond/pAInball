@@ -1,109 +1,162 @@
-<!-- markdownlint-disable-file MD033 -->
-
-# SpaceCadetPinball
+# AI Plays Space Cadet Pinball
 
 ## Summary
 
-Reverse engineering of `3D Pinball for Windows - Space Cadet`, a game bundled with Windows.
+This is a fun project that aims to train an Neural Network to play the famous `3D Pinball - Space Cadet`, a game bundled with Windows.
 
-## How to play
+To build this project, special thanks have to go to [k4zmu2a/SpaceCadetPinball](https://github.com/k4zmu2a/SpaceCadetPinball) repo. Refer to that project for more information about porting `Space Cadet`.
 
-Place compiled executable into a folder containing original game resources (not included).\
-Supports data files from Windows and Full Tilt versions of the game.
+## How to build and play the game
 
-## Known source ports
+You need to download the game resources (.dat & audio files) and place them in the `bin/` directory.
+These resources are not included, but should be easy to find - just google it.
 
-| Platform           | Author          | URL                                                                                                        |
-| ------------------ | --------------- | ---------------------------------------------------------------------------------------------------------- |
-| PS Vita            | Axiom           | <https://github.com/suicvne/SpaceCadetPinball_Vita>                                                        |
-| Emscripten         | alula           | <https://github.com/alula/SpaceCadetPinball> <br> Play online: <https://alula.github.io/SpaceCadetPinball> |
-| Nintendo Switch    | averne          | <https://github.com/averne/SpaceCadetPinball-NX>                                                           |
-| webOS TV           | mariotaku       | <https://github.com/webosbrew/SpaceCadetPinball>                                                           |
-| Android (WIP)      | Iscle           | https://github.com/Iscle/SpaceCadetPinball                                                                 |
-| Nintendo Wii       | MaikelChan      | https://github.com/MaikelChan/SpaceCadetPinball                                                            |
-| Nintendo 3DS       | MaikelChan      | https://github.com/MaikelChan/SpaceCadetPinball/tree/3ds                                                   |
-| Nintendo Wii U     | IntriguingTiles | https://github.com/IntriguingTiles/SpaceCadetPinball-WiiU                                                  |
-| MorphOS            | BeWorld         | https://www.morphos-storage.net/?id=1688897                                                                |
-| AmigaOS 4          | rjd324          | http://aminet.net/package/game/actio/spacecadetpinball-aos4                                                |
-| Android (WIP)      | fexed           | https://github.com/fexed/Pinball-on-Android                                                                |
-
-Platforms covered by this project: desktop Windows, Linux and macOS.
-
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-
-## Source
-
-* `pinball.exe` from `Windows XP` (SHA-1 `2A5B525E0F631BB6107639E2A69DF15986FB0D05`) and its public PDB
-* `CADET.EXE` 32bit version from `Full Tilt! Pinball` (SHA-1 `3F7B5699074B83FD713657CD94671F2156DBEDC4`)
-
-## Tools used
-
-`Ghidra`, `Ida`, `Visual Studio`
-
-## What was done
-
-* All structures were populated, globals and locals named.
-* All subs were decompiled, C pseudo code was converted to compilable C++. Loose (namespace?) subs were assigned to classes.
+Afterwards, follow the below steps.
 
 ## Compiling
 
-Project uses `C++11` and depends on `SDL2` libs.
-
 ### On Windows
 
-Download and unpack devel packages for `SDL2` and `SDL2_mixer`.\
-Set paths to them in `CMakeLists.txt`, see suggested placement in `/Libs`.\
-Compile with Visual Studio; tested with 2019.
+TBD - please contribute :)
 
 ### On Linux
 
-Install devel packages for `SDL2` and `SDL2_mixer`.\
+Install devel packages for `SDL2`, `SDL2_mixer` and `SDL2_ttf`.\
 Compile with CMake; tested with GCC 10, Clang 11.\
-To cross-compile for Windows, install a 64-bit version of mingw and its `SDL2` and `SDL2_mixer` distributions, then use the `mingwcc.cmake` toolchain.
 
-[![Packaging status](https://repology.org/badge/tiny-repos/spacecadetpinball.svg)](https://repology.org/project/spacecadetpinball/versions) 
+At the root of the repo run:
+```bash
+cmake -GNinja .  
+ninja
+```
 
-Some distributions provide a package in their repository. You can use those for easier dependency management and updates.
+The executable should be under folder `bin/SpaceCadetPinball`. You can play it by running:
 
-This project is available as Flatpak on [Flathub](https://flathub.org/apps/details/com.github.k4zmu2a.spacecadetpinball).
+```bash
+./bin/SpaceCadetPinball
+```
 
 ### On macOS
 
-Install XCode (or at least Xcode Command Line Tools with `xcode-select --install`) and CMake.
+TBD - please contribute :)
 
-**Manual compilation:**
+### Changes done to SpaceCadet Source code
 
-* **Homebrew**: Install the `SDL2`, `SDL2_mixer` homebrew packages.
-* **MacPorts**: Install the `libSDL2`, `libSDL2_mixer` macports packages.
+In order to enable the AI to play the game, the source code of SpaceCadet had to be enhanced. These are the topline changes:
 
-Compile with CMake. Ensure that `CMAKE_OSX_ARCHITECTURES` variable is set for either `x86_64` Apple Intel or `arm64` for Apple Silicon.
+- Thread to output to stdout the inputs required for the Neuran Network
+- Thread to read from stdin the outputs of the Neuran Network and to perform the commanded action
+- By using the SDL2_ttf package, visualize on the screen the inputs to the Neural Network
 
-Tested with: macOS Big Sur (Intel) with Xcode 13 & macOS Montery Beta (Apple Silicon) with Xcode 13.
+### See the game feedback
 
-**Automated compilation:**
+You can enable the game feedback via the stdout by enabling the "Debug Overlay" option:
 
-Run the `build-mac-app.sh` script from the root of the repository. The app will be available in a DMG file named `SpaceCadetPinball-<version>-mac.dmg`.
+<img src="assets/enable_debug_overlay.png"
+     alt="Enable Debug Overlay"
+     style="float: left; margin-right: 10px;" />
 
-Tested with: macOS Ventura (Apple Silicon) with Xcode Command Line Tools 14 & macOS Big Sur on GitHub Runner (Intel) with XCode 13.
+<img src="assets/feedback_debug_overlay.png"
+     alt="Feedback Debug Overlay"
+     style="float: left; margin-right: 10px;" />
 
-## Plans
+## AI that Sh\*t 🤖
 
-* ~~Decompile original game~~
-* ~~Resizable window, scaled graphics~~
-* ~~Loader for high-res sprites from CADET.DAT~~
-* ~~Cross-platform port using SDL2, SDL2_mixer, ImGui~~
-* Full Tilt Cadet features
-* Localization support
-* Maybe: Support for the other two tables - Dragon and Pirate
-* Maybe: Game data editor
+A Neuran Network has been developed to play the game. The [NEAT](https://en.wikipedia.org/wiki/Neuroevolution_of_augmenting_topologies) genetic algorithm is used to create a generation, find the best performer(s), perform crossover and mutations and repeat. The best performer(s) of each epoch are stored, to allow continuing the training from a specific generation.
 
-## On 64-bit bug that killed the game
+Signs of playing "intelligence" start to show up after ~100 generations, but your results may vary due to the random starting point.
 
-I did not find it, decompiled game worked in x64 mode on the first try.\
-It was either lost in decompilation or introduced in x64 port/not present in x86 build.\
-Based on public description of the bug (no ball collision), I guess that the bug was in `TEdgeManager::TestGridBox`
+### Neural Network architecture
+
+A Neural Network with 2 hidden layers of 7 nodes each was used.
+
+Inputs:
+
+- Location of the ball (X, Y)
+- Speed of the ball
+- Direction of the ball (X, Y)
+
+Outputs:
+
+- Do nothing
+- Actuate Left Flipper
+- Actuate Right Flipper
+
+
+Parameters for the fitness function:
+
+- Score
+- Number of ball hits with the Flippers
+- Ball drained flag
+
+Example:
+
+<img src="assets/nn_example.png"
+     alt="Feedback Debug Overlay"
+     width="450"
+     style="float: left; margin-right: 10px;" />
+
+
+### Python Dependencies
+
+See `AIPlayer/pip_packages.txt`
+
+Install via: `pip install -r pip_packages.txt`
+
+### Run the AI
+
+Execute the following to start from scratch (random Neural Networks):
+
+```bash
+python AIPlayer/run_game.py
+```
+
+Execute the following to start from specific parents
+
+```bash
+python AIPlayer/run_game.py <path_to_parent_0_weights.csv> <path_to_parent_1_weights.csv> ...
+```
+
+For the AI to receive game feedback, make sure you enable the Debug Overlay in the game settings:
+
+<img src="assets/enable_debug_overlay.png"
+     alt="Enable Debug Overlay"
+     style="float: left; margin-right: 10px;" />
+
+
+### AI Project structure
+
+All the logic related to the AI is under `AIPlayer`.
+
+- `neural_ntw.py`: Implementation of a Neural Network class
+- `nn_genetics.py`: Implementation of the NEAT genetic algorithm for NN
+- `nn_visualization.py`: Implementation of helper classes to visualize the Neural Networks and their weights (see [Special Thanks](#special-thanks))
+- `run_game.py`: Main script
+
+At the end of each epoch the script outputs the following:
+
+- All parents in csv format at: `AIPlayer/runs/<execution_timestamp>/ep<X>_parent_<Y>_id<Z>_<fitness>.csv`
+- All parents visualizations in png format at: `AIPlayer/runs/<execution_timestamp>/ep<X>_parent_<Y>_id<Z>.png`
+- The last parents visualizations: `AIPlayer/runs/<execution_timestamp>/live_<Y>.png`
+
+### AI Player Configuration
+
+In `run_game.py`:
+```python
+num_of_nns = 30 # Set the number of Neural Network Children per epoch
+num_of_rand_children = 5 # Number for additional random Neural Networks per epoch
+...
+hidden_layers = [7,7] # Number of hiden layers and their nodes
+start_timeout = 30; # Starting game duration per epoch. It is increasing by 10 sec every 10 epoch
+```
+
+## Future Plans
+
+- Train a Neural Network with more output actions
+- Optimize fitness function to punish erratic behaviour
+- Use PPO Algorithm for evolving the Neural Network
+
+## Special Thanks
+
+- Space Cadet port: [k4zmu2a/SpaceCadetPinball](https://github.com/k4zmu2a/SpaceCadetPinball)
+- Useful library for Neural Network Visualization: [jzliu-100/visualize-neural-network](https://github.com/jzliu-100/visualize-neural-network)

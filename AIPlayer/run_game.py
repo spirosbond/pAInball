@@ -5,9 +5,8 @@ from multiprocessing import Process, Array
 import time
 import json
 from enum import Enum
-from neural_ntw2 import NeuralNetwork
+from neural_ntw import NeuralNetwork
 from nn_genetics import NNGenetics
-import neural_ntw
 from numpy import array, random
 import os
 import psutil
@@ -15,8 +14,10 @@ import random
 import gc
 from datetime import datetime
 import sys
+from nn_visualization import DrawNN
 
 class Action(Enum):
+    # Helper Class for all AI Actions (outputs)
     nothing = 0
     # LF_Ext = 1
     # LF_Ret = 2
@@ -32,6 +33,7 @@ class Action(Enum):
         return str(v)+"\r\n"
 
 class Fbk(Enum):
+    # Helper Class for all game feedback
     Mode = 0
     Speed = 1
     Xpos = 2
@@ -43,6 +45,7 @@ class Fbk(Enum):
     BallDrainFlag = 8
 
 def window_id(proc_id):
+    # Helper function to get window id
     proc = Popen(['wmctrl', '-lp'],
                             env=os.environ,
                             stdout=PIPE,
@@ -54,6 +57,7 @@ def window_id(proc_id):
             return s[0]
 
 def wait_for_window(proc_id, timeout=3):
+    # Helper function to open window
     wid = None
     poll_interval = 0.1
     attempts = max(1, timeout // poll_interval)
@@ -71,6 +75,7 @@ def wait_for_window(proc_id, timeout=3):
     return wid
 
 def resize_window(pid, geometry):
+    # Helper function to resize window
     wid = wait_for_window(pid)
     if wid is None:
         print(f'could not get window for process ID: {pid}')
@@ -78,7 +83,13 @@ def resize_window(pid, geometry):
         cmd = ['wmctrl', '-i', '-r', wid, '-e', geometry]
         Popen(cmd, env=os.environ)
 
-def get_feedback(p,i, fbk, scores, ball_collisions):
+def get_feedback(p, i, fbk, scores, ball_collisions):
+    """ Process that receives the feedback of the game via stdout
+    i: Unique identifier of the process
+    fbk: Shared array that has the live feedback of the game
+    scores: Shared array to capture all scores
+    ball_collisions: Shared array to capture all ball collisions
+    """
     for line in iter(p.stdout.readline, ""):
         try:
             # print(line)
@@ -100,6 +111,13 @@ def get_feedback(p,i, fbk, scores, ball_collisions):
         
 
 def press_keys(p, i, fbk, nn, timeout):
+    """ Process that sends the commands to the game via stdin
+    p: Game Process
+    i: Unique identifier of the process
+    fbk: Shared array that has the live feedback of the game (from get_feedback)
+    nn: The neural network to control this game
+    timeout: Game length duration
+    """
     while fbk[Fbk.Mode.value] != 1:
         # print(f"sleeping")
         time.sleep(0.1)
@@ -118,6 +136,14 @@ def press_keys(p, i, fbk, nn, timeout):
     # print(f"press_keys {i} finished")
 
 def start_game(i, nn, scores, ball_collisions, window_coords, timeout):
+    """ Process that launches multiple instances of the game
+    i: Unique identifier of the process
+    nn: The neural network to control this game
+    scores: Shared array to capture all scores
+    ball_collisions: Shared array to capture all ball collisions
+    window_coords: The wondow coordinations for this process
+    timeout: Game length duration
+    """
     feedback = Array('f',len(Fbk))
     with Popen(["bin/SpaceCadetPinball"], stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, universal_newlines=True) as p:
         p1 = Process(target=get_feedback, args=(p, i, feedback, scores, ball_collisions))
@@ -134,12 +160,18 @@ def start_game(i, nn, scores, ball_collisions, window_coords, timeout):
         p1.terminate()
         # print(f"start_game {i} finished")
 
-def create_next_generation(parents, n_of_nns, n_of_rand_ch, genetics):
+def create_next_generation(parents, n_of_ch, n_of_rand_ch, genetics):
+    """ Function that creates the children for the next generation
+    parents: List of NNs to be used as parents
+    n_of_ch: Number of children to generate
+    n_of_rand_ch: Number of random children to generate
+    genetics: The genetics class to use to create the next generation
+    """
     child = nn_genetics.crossover(parents)
         # children = parents
     children = []
 
-    for i in range(n_of_nns-len(children)-n_of_rand_ch):
+    for i in range(n_of_ch-len(children)-n_of_rand_ch):
         children.append(genetics.mutate(child, 0.01))
     for i in range(n_of_rand_ch):
         children.append(NeuralNetwork(parents[0].num_of_inputs, parents[0].num_of_outputs, parents[0].hidden_layers))
@@ -148,13 +180,13 @@ def create_next_generation(parents, n_of_nns, n_of_rand_ch, genetics):
 
 if __name__ == '__main__':
     random.seed()
-    num_of_nns = 30
-    num_of_rand_children = 5
+    num_of_nns = 30 # Set the number of Neural Network Children per epoch
+    num_of_rand_children = 5 # Number for random Neural Networks per epoch
     
     num_of_inputs = len(Fbk) - 4
     num_of_outputs = len(Action)
-    hidden_layers = [7,7]
-    start_timeout = 30;
+    hidden_layers = [7,7] # Number of hiden layers and their nodes
+    start_timeout = 30; # Starting game duration per epoch. It is increasing by 10 sec every 10 epoch
     
     now = datetime.now()
     now_str = now.strftime("%Y-%m-%d %H_%M_%S")
@@ -162,6 +194,8 @@ if __name__ == '__main__':
     directory = f"AIPlayer/runs/{now_str}"
     os.makedirs(directory)
     nn_genetics = NNGenetics()
+
+    draw_nn = DrawNN(directory)
 
     children = []
     if len(sys.argv) > 1:
@@ -199,7 +233,7 @@ if __name__ == '__main__':
             # neural_network1.print_outputs(outputs)
             sizeX = 300
             sizeY = 220
-            windowsPerRow = 1800 // sizeX
+            windowsPerRow = 1800 // sizeX # 1800px is based on the width of my screen 1920x1080. Adjust per your preference
             winLocationX = (i * sizeX) % 1800 + 100
             winLocationY = (i // windowsPerRow) * (sizeY+25) + 25 
             g = Process(target=start_game, args=(
@@ -229,8 +263,9 @@ if __name__ == '__main__':
             print(f"Parent {i}: {idx} with fitness: {fitness[i]}")
             parent_nns.append(nns[idx])
             nns[idx].save_weights(f"{directory}/ep{epoch}_parent_{i}_id{idx}_{fitness[i]}.csv")
+            draw_nn.configure([num_of_inputs, 7, 7, num_of_outputs], nns[idx].get_weights())
+            draw_nn.save_draw(epoch, i, idx, fitness[i])
 
-        
         
         for ch in children:
             del ch
@@ -246,5 +281,4 @@ if __name__ == '__main__':
 
         gc.collect()
     
-
     
