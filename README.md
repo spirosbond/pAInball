@@ -156,7 +156,9 @@ start_timeout = 30; # Starting game duration per epoch. It is increasing by 10 s
 - Optimize fitness function to punish erratic behaviour
 - Use PPO Algorithm for evolving the Neural Network
 
-## Special Thanks
+## Special Thanks and Usefull Sources
 
 - Space Cadet port: [k4zmu2a/SpaceCadetPinball](https://github.com/k4zmu2a/SpaceCadetPinball)
 - Useful library for Neural Network Visualization: [jzliu-100/visualize-neural-network](https://github.com/jzliu-100/visualize-neural-network)
+- Multilinear NN example: [miloharper/multi-layer-neural-network](https://github.com/miloharper/multi-layer-neural-network)
+- Genetic Algorithm for optimizing a NN: [luaffjk/ga-mlp](https://github.com/luaffjk/ga-mlp)
