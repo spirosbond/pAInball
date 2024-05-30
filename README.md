@@ -1,8 +1,8 @@
-# AI Plays Space Cadet Pinball
+# pAInball - AI Plays Space Cadet Pinball
 
 ## Summary
 
-This is a fun project that aims to train an Neural Network to play the famous `3D Pinball - Space Cadet`, a game bundled with Windows.
+This is a fun project that aims to train an Neural Network to play the famous `3D Pinball - Space Cadet`, a game bundled with Windows 95 and XP.
 
 To build this project, special thanks have to go to [k4zmu2a/SpaceCadetPinball](https://github.com/k4zmu2a/SpaceCadetPinball) repo. Refer to that project for more information about porting `Space Cadet`.
 
@@ -22,7 +22,7 @@ TBD - please contribute :)
 ### On Linux
 
 Install devel packages for `SDL2`, `SDL2_mixer` and `SDL2_ttf`.\
-Compile with CMake; tested with GCC 10, Clang 11.\
+Insatll `cmake` and `ninja` and compile with CMake; tested with GCC 10, Clang 11.\
 
 At the root of the repo run:
 ```bash
@@ -86,7 +86,8 @@ Outputs:
 Parameters for the fitness function:
 
 - Score
-- Number of ball hits with the Flippers
+- Number of ball hits with the Left Flipper
+- Number of ball hits with the Right Flipper
 - Ball drained flag
 
 Example:
@@ -102,6 +103,8 @@ Example:
 See `AIPlayer/pip_packages.txt`
 
 Install via: `pip install -r pip_packages.txt`
+
+In order to tidy the multiple games on the screen to have a good overview, the system package `wmctrl` is used in `run_game.py` in function `resize_window()`. Install it based on your OS.
 
 ### Run the AI
 
@@ -135,9 +138,9 @@ All the logic related to the AI is under `AIPlayer`.
 
 At the end of each epoch the script outputs the following:
 
-- All parents in csv format at: `AIPlayer/runs/<execution_timestamp>/ep<X>_parent_<Y>_id<Z>_<fitness>.csv`
-- All parents visualizations in png format at: `AIPlayer/runs/<execution_timestamp>/ep<X>_parent_<Y>_id<Z>.png`
-- The last parents visualizations: `AIPlayer/runs/<execution_timestamp>/live_<Y>.png`
+- All parents in csv format at: `AIPlayer/runs/<config_timestamp>/ep<X>_parent_<Y>_id<Z>_<fitness>.csv`
+- All parents visualizations in png format at: `AIPlayer/runs/<config_timestamp>/ep<X>_parent_<Y>_id<Z>.png`
+- The last parents visualizations: `AIPlayer/runs/<config_timestamp>/live_<Y>.png`
 
 ### AI Player Configuration
 
@@ -156,7 +159,7 @@ start_timeout = 30; # Starting game duration per epoch. It is increasing by 10 s
 - Optimize fitness function to punish erratic behaviour
 - Use PPO Algorithm for evolving the Neural Network
 
-## Special Thanks and Usefull Sources
+## Special Thanks and Useful Sources
 
 - Space Cadet port: [k4zmu2a/SpaceCadetPinball](https://github.com/k4zmu2a/SpaceCadetPinball)
 - Useful library for Neural Network Visualization: [jzliu-100/visualize-neural-network](https://github.com/jzliu-100/visualize-neural-network)

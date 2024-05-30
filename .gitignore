@@ -1,3 +1,8 @@
+#Sublime stuff
+*.sublime-project
+*.sublime-workspace
+pyrightconfig.json
+
 # AI stuff
 AIPlayer/runs/
 *.hackertyper

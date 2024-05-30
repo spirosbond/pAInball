@@ -29,12 +29,12 @@ gdrv_bitmap8* DebugOverlay::dbScreen = nullptr;
 void writeOutputsForAI() {
 	printf("Thread writeOutputsForAI started\n");
 	while(1){
-		if(pb::MainTable->BallInDrainFlag){
-	    		pb::MainTable->FlipperL->ball_collisions = 0;
-	    		pb::MainTable->FlipperR->ball_collisions = 0;
-	    	}
+		// if(pb::MainTable->BallInDrainFlag){
+	    		// pb::MainTable->FlipperL->ball_collisions = 0;
+	    		// pb::MainTable->FlipperR->ball_collisions = 0;
+	    	// }
 		for (auto ball : pb::MainTable->BallList) {
-			printf("%d,%f,%f,%f,%f,%f,%d,%d,%d\r",
+			printf("%d,%f,%f,%f,%f,%f,%d,%d,%d,%d\r",
 			    		pb::game_mode,
 			    		ball->Speed / 60,
 			    		ball->Position.X / 7.5,
@@ -42,7 +42,8 @@ void writeOutputsForAI() {
 			    		ball->Direction.X,
 			    		ball->Direction.Y,
 			    		pb::MainTable->CurScore,
-			    		pb::MainTable->FlipperL->ball_collisions + pb::MainTable->FlipperR->ball_collisions,
+			    		pb::MainTable->FlipperL->ball_collisions,
+                        pb::MainTable->FlipperR->ball_collisions,
 			    		pb::MainTable->BallInDrainFlag
 			    		);
 	    	fflush(stdout);
