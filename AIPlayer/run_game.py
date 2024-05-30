@@ -252,7 +252,7 @@ if __name__ == "__main__":
     num_of_outputs = len(Action)
     hidden_layers = [7, 7]  # Number of hiden layers and their nodes
     start_timeout = 30
-    n_of_parents = 1
+    n_of_parents = 2
     mut_prob = 0.09
     # Starting game duration per epoch. It is increasing by 10 sec every 10 epoch
 
